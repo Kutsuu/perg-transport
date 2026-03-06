@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="et">
+<head>
+<meta charset="utf-8">
+<title>Väljumised</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<style>
+:root{
+  --bg:#111;
+  --panel:#1a1a1a;
+  --text:#ffffff;
+  --muted:#aaaaaa;
+  --accent:#12e747c2;
+}
+
+html,body{
+  height:100%;
+  margin:0;
+  background:var(--bg);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+  color:var(--text);
+}
+
+/* Layout */
+.wrapper{
+  height:100%;
+  display:flex;
+  flex-direction:column;
+}
+
+/* Large centered clock */
+.clock{
+  text-align:center;
+  font-size:96px;
+  font-weight:800;
+  padding:20px 0 10px 0;
+  letter-spacing:2px;
+}
+
+/* Table fills remaining space */
+.table-container{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  padding:0 20px 20px 20px;
+}
+
+table{
+  width:100%;
+  height:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  background:var(--panel);
+  border-radius:16px;
+  overflow:hidden;
+}
+
+thead{
+  background:#222;
+}
+
+th{
+  font-size:54px;
+  font-weight:600;
+  text-align:left;
+  padding:20px;
+  color:var(--muted);
+}
+
+td{
+  font-size:54px;
+  font-weight:700;
+  padding:20px;
+  border-top:1px solid #2a2a2a;
+}
+
+tbody tr{
+  height:9%;
+}
+
+tbody tr:nth-child(even){
+  background:#181818;
+}
+
+.line{
+  color:var(--accent);
+  font-weight:800;
+}
+
+.minutes{
+  text-align:right;
+  font-size:54px;
+}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+</head>
+<body>
+
+<div class="wrapper">
+  <div id="clock" class="clock">--:--</div>
+
+  <div class="table-container">
+    <table id="departuresTable">
+      <thead>
+        <tr>
+          <th>Liin</th>
+          <th>Sihtkoht</th>
+          <th>Väljub</th>
+          <th style="text-align:right;">min</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const DEFAULT_ZIP = './tallinn.zip';
+const DEFAULT_STOP = 'Kolde puiestee';
+const MAX_DISPLAY = 10;
+const REFRESH_INTERVAL_MS = 15000;
+const REDOWNLOAD_INTERVAL_MS = 5*60*1000;
+
+let INDEXES = null;
+let lastDownloadedAt = 0;
+
+function updateClock(){
+  const n = new Date();
+  const hh = String(n.getHours()).padStart(2,'0');
+  const mm = String(n.getMinutes()).padStart(2,'0');
+  document.getElementById("clock").textContent = hh + ":" + mm;
+}
+setInterval(updateClock,1000);
+updateClock();
+
+function parseCSV(text){
+  return Papa.parse(text.trim(), {header:true, skipEmptyLines:true}).data;
+}
+
+function parseGtfsTimeToDate(timeStr, ref){
+  if(!timeStr) return null;
+  let [h,m,s] = timeStr.split(":").map(Number);
+  const d = new Date(ref);
+  d.setHours(0,0,0,0);
+  const addDays = Math.floor(h/24);
+  h = h % 24;
+  d.setDate(d.getDate()+addDays);
+  d.setHours(h,m,s,0);
+  return d;
+}
+
+async function loadGTFS(force=false){
+  const now = Date.now();
+  if(!force && INDEXES && now - lastDownloadedAt < REDOWNLOAD_INTERVAL_MS){
+    return INDEXES;
+  }
+
+  const res = await fetch(DEFAULT_ZIP);
+  const ab = await res.arrayBuffer();
+  const zip = await JSZip.loadAsync(ab);
+
+  const stops = parseCSV(await zip.file("stops.txt").async("string"));
+  const stop_times = parseCSV(await zip.file("stop_times.txt").async("string"));
+  const trips = parseCSV(await zip.file("trips.txt").async("string"));
+  const routes = parseCSV(await zip.file("routes.txt").async("string"));
+
+  const stopById = new Map(stops.map(s=>[s.stop_id,s]));
+  const tripById = new Map(trips.map(t=>[t.trip_id,t]));
+  const routeById = new Map(routes.map(r=>[r.route_id,r]));
+
+  const stopTimesByStop = new Map();
+  for(const st of stop_times){
+    if(!stopTimesByStop.has(st.stop_id)){
+      stopTimesByStop.set(st.stop_id,[]);
+    }
+    stopTimesByStop.get(st.stop_id).push(st);
+  }
+
+  INDEXES = {stops,stopById,tripById,routeById,stopTimesByStop};
+  lastDownloadedAt = now;
+  return INDEXES;
+}
+
+function computeUpcoming(){
+  if(!INDEXES) return [];
+  const stopIds = INDEXES.stops
+    .filter(s=>s.stop_name.toLowerCase().includes(DEFAULT_STOP.toLowerCase()))
+    .map(s=>s.stop_id);
+
+  const now = new Date();
+  const candidates = [];
+
+  for(const sid of stopIds){
+    const rows = INDEXES.stopTimesByStop.get(sid)||[];
+    for(const r of rows){
+      const dt = parseGtfsTimeToDate(r.departure_time||r.arrival_time, now);
+      if(!dt) continue;
+      if(dt < now) continue;
+
+      const trip = INDEXES.tripById.get(r.trip_id)||{};
+      const route = INDEXES.routeById.get(trip.route_id)||{};
+      candidates.push({
+        dt,
+        route: route.route_short_name||route.route_id||"",
+        headsign: trip.trip_headsign||""
+      });
+    }
+  }
+
+  candidates.sort((a,b)=>a.dt-b.dt);
+
+  const unique=[];
+  const seen=new Set();
+  for(const c of candidates){
+    const key=c.route+"|"+c.dt.getTime();
+    if(seen.has(key)) continue;
+    seen.add(key);
+    unique.push(c);
+    if(unique.length>=MAX_DISPLAY) break;
+  }
+
+  return unique;
+}
+
+function render(){
+  const tbody=document.querySelector("#departuresTable tbody");
+  const upcoming=computeUpcoming();
+  tbody.innerHTML="";
+
+  for(const u of upcoming){
+    const tr=document.createElement("tr");
+    const mins=Math.max(0,Math.round((u.dt-new Date())/60000));
+    tr.innerHTML=`
+      <td class="line">${u.route}</td>
+      <td>${u.headsign}</td>
+      <td>${u.dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</td>
+      <td class="minutes">${mins}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+async function refresh(force=false){
+  await loadGTFS(force);
+  render();
+}
+
+refresh(true);
+setInterval(()=>refresh(false),REFRESH_INTERVAL_MS);
+setInterval(()=>refresh(true),REDOWNLOAD_INTERVAL_MS);
+
+</script>
+</body>
+</html>
