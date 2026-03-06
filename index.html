@@ -1,257 +1,268 @@
 <!doctype html>
 <html lang="et">
+
 <head>
-<meta charset="utf-8">
-<title>Väljumised</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta charset="utf-8">
+    <title>Väljumised</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --panel: #ffffff;
+            --text: #081b1f;
+            --muted: #ecf4f0;
+            --accent: #0e794b;
+        }
 
-<style>
-:root{
-  --bg:#111;
-  --panel:#1a1a1a;
-  --text:#ffffff;
-  --muted:#aaaaaa;
-  --accent:#12e747c2;
-}
+        html,
+        body {
+            justify-content: center;
+            margin: 0;
+            background: var(--bg);
+            font-family: Mulish, Arial, sans-serif;
+            color: var(--text);
+            font-size: 5vh;
+            overflow: hidden;
+        }
 
-html,body{
-  height:100%;
-  margin:0;
-  background:var(--bg);
-  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;
-  color:var(--text);
-}
+        /* Layout */
+        .wrapper {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
 
-/* Layout */
-.wrapper{
-  height:100%;
-  display:flex;
-  flex-direction:column;
-}
+        /* Large centered clock */
+        .clock {
+            display: inline-block;
+            background: #e3efea;
+            color: var(--text);
+            padding: 0px 24px;
+            border-radius: 12px;
+            width: fit-content;
 
-/* Large centered clock */
-.clock{
-  text-align:center;
-  font-size:96px;
-  font-weight:800;
-  padding:20px 0 10px 0;
-  letter-spacing:2px;
-}
+            text-align: left;
+            font-size: 10vh;
+            font-weight: 800;
+        }
 
-/* Table fills remaining space */
-.table-container{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  padding:0 20px 20px 20px;
-}
+        /* Table fills remaining space */
+        .table-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
+        }
 
-table{
-  width:100%;
-  height:100%;
-  border-collapse:collapse;
-  table-layout:fixed;
-  background:var(--panel);
-  border-radius:16px;
-  overflow:hidden;
-}
+        table {
+            width: 100%;
+            height: fit-content;
+            border-collapse: collapse;
+            table-layout: fixed;
+            background: var(--panel);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.2);
+        }
 
-thead{
-  background:#222;
-}
+        thead {
+            background: #0e794b;
+        }
 
-th{
-  font-size:54px;
-  font-weight:600;
-  text-align:left;
-  padding:20px;
-  color:var(--muted);
-}
+        th {
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 20px 10px 20px;
+            color: var(--muted);
+        }
 
-td{
-  font-size:54px;
-  font-weight:700;
-  padding:20px;
-  border-top:1px solid #2a2a2a;
-}
+        td {
+            font-weight: 700;
+            padding: 10px 20px 10px 20px;
+            border-top: 1px solid #ecf4f0;
+        }
 
-tbody tr{
-  height:9%;
-}
+        tbody tr {
+            height: 9%;
+        }
 
-tbody tr:nth-child(even){
-  background:#181818;
-}
+        tbody tr:nth-child(even) {
+            background: #e3efea;
+        }
 
-.line{
-  color:var(--accent);
-  font-weight:800;
-}
+        .line {
+            color: var(--accent);
+            font-weight: 800;
+        }
 
-.minutes{
-  text-align:right;
-  font-size:54px;
-}
-</style>
+        .minutes {
+            text-align: left;
+            width: fit-content;
+        }
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+        /* Highlight box for the route number (ONLY visual change) */
+        .line-box {
+            display: inline-block;
+            background: var(--accent);
+            color: #ffffff;
+            padding: 0px 24px;
+            border-radius: 12px;
+            font-weight: 800;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 </head>
+
 <body>
 
-<div class="wrapper">
-  <div id="clock" class="clock">--:--</div>
+    <div class="wrapper">
+        <div id="clock" class="clock">--:--</div>
 
-  <div class="table-container">
-    <table id="departuresTable">
-      <thead>
-        <tr>
-          <th>Liin</th>
-          <th>Sihtkoht</th>
-          <th>Väljub</th>
-          <th style="text-align:right;">min</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</div>
+        <div class="table-container">
+            <table id="departuresTable">
+                <thead>
+                    <tr>
+                        <th>Liin</th>
+                        <th>Sihtkoht</th>
+                        <th>Väljub</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
 
-<script>
-const DEFAULT_ZIP = './tallinn.zip';
-const DEFAULT_STOP = 'Kolde puiestee';
-const MAX_DISPLAY = 10;
-const REFRESH_INTERVAL_MS = 15000;
-const REDOWNLOAD_INTERVAL_MS = 5*60*1000;
+    <script>
+        const DEFAULT_ZIP = './tallinn.zip';
+        const DEFAULT_STOP = 'Kolde puiestee';
+        const MAX_DISPLAY = 8;
+        const REFRESH_INTERVAL_MS = 15000;
+        const REDOWNLOAD_INTERVAL_MS = 5 * 60 * 1000;
 
-let INDEXES = null;
-let lastDownloadedAt = 0;
+        let INDEXES = null;
+        let lastDownloadedAt = 0;
 
-function updateClock(){
-  const n = new Date();
-  const hh = String(n.getHours()).padStart(2,'0');
-  const mm = String(n.getMinutes()).padStart(2,'0');
-  document.getElementById("clock").textContent = hh + ":" + mm;
-}
-setInterval(updateClock,1000);
-updateClock();
+        function updateClock() {
+            const n = new Date();
+            const hh = String(n.getHours()).padStart(2, '0');
+            const mm = String(n.getMinutes()).padStart(2, '0');
+            const ss = String(n.getSeconds()).padStart(2, '0');
+            document.getElementById("clock").textContent = hh + ":" + mm + ":" + ss;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
 
-function parseCSV(text){
-  return Papa.parse(text.trim(), {header:true, skipEmptyLines:true}).data;
-}
+        function parseCSV(text) { return Papa.parse(text.trim(), { header: true, skipEmptyLines: true }).data; }
 
-function parseGtfsTimeToDate(timeStr, ref){
-  if(!timeStr) return null;
-  let [h,m,s] = timeStr.split(":").map(Number);
-  const d = new Date(ref);
-  d.setHours(0,0,0,0);
-  const addDays = Math.floor(h/24);
-  h = h % 24;
-  d.setDate(d.getDate()+addDays);
-  d.setHours(h,m,s,0);
-  return d;
-}
+        function parseGtfsTimeToDate(timeStr, ref) {
+            if (!timeStr) return null;
+            let [h, m, s] = timeStr.split(":").map(Number);
+            const d = new Date(ref);
+            d.setHours(0, 0, 0, 0);
+            const addDays = Math.floor(h / 24);
+            h = h % 24;
+            d.setDate(d.getDate() + addDays);
+            d.setHours(h, m, s, 0);
+            return d;
+        }
 
-async function loadGTFS(force=false){
-  const now = Date.now();
-  if(!force && INDEXES && now - lastDownloadedAt < REDOWNLOAD_INTERVAL_MS){
-    return INDEXES;
-  }
+        async function loadGTFS(force = false) {
+            const now = Date.now();
+            if (!force && INDEXES && now - lastDownloadedAt < REDOWNLOAD_INTERVAL_MS) {
+                return INDEXES;
+            }
+            const res = await fetch(DEFAULT_ZIP);
+            const ab = await res.arrayBuffer();
+            const zip = await JSZip.loadAsync(ab);
+            const stops = parseCSV(await zip.file("stops.txt").async("string"));
+            const stop_times = parseCSV(await zip.file("stop_times.txt").async("string"));
+            const trips = parseCSV(await zip.file("trips.txt").async("string"));
+            const routes = parseCSV(await zip.file("routes.txt").async("string"));
+            const stopById = new Map(stops.map(s => [s.stop_id, s]));
+            const tripById = new Map(trips.map(t => [t.trip_id, t]));
+            const routeById = new Map(routes.map(r => [r.route_id, r]));
+            const stopTimesByStop = new Map();
+            for (const st of stop_times) {
+                if (!stopTimesByStop.has(st.stop_id)) {
+                    stopTimesByStop.set(st.stop_id, []);
+                }
+                stopTimesByStop.get(st.stop_id).push(st);
+            }
+            INDEXES = { stops, stopById, tripById, routeById, stopTimesByStop };
+            lastDownloadedAt = now;
+            return INDEXES;
+        }
 
-  const res = await fetch(DEFAULT_ZIP);
-  const ab = await res.arrayBuffer();
-  const zip = await JSZip.loadAsync(ab);
+        function computeUpcoming() {
+            if (!INDEXES) return [];
+            const stopIds = INDEXES.stops
+                .filter(s => s.stop_name.toLowerCase().includes(DEFAULT_STOP.toLowerCase()))
+                .map(s => s.stop_id);
 
-  const stops = parseCSV(await zip.file("stops.txt").async("string"));
-  const stop_times = parseCSV(await zip.file("stop_times.txt").async("string"));
-  const trips = parseCSV(await zip.file("trips.txt").async("string"));
-  const routes = parseCSV(await zip.file("routes.txt").async("string"));
+            const now = new Date();
+            const candidates = [];
 
-  const stopById = new Map(stops.map(s=>[s.stop_id,s]));
-  const tripById = new Map(trips.map(t=>[t.trip_id,t]));
-  const routeById = new Map(routes.map(r=>[r.route_id,r]));
+            for (const sid of stopIds) {
+                const rows = INDEXES.stopTimesByStop.get(sid) || [];
+                for (const r of rows) {
+                    const dt = parseGtfsTimeToDate(r.departure_time || r.arrival_time, now);
+                    if (!dt) continue;
+                    if (dt < now) continue;
+                    const trip = INDEXES.tripById.get(r.trip_id) || {};
+                    const route = INDEXES.routeById.get(trip.route_id) || {};
+                    candidates.push({
+                        dt,
+                        route: route.route_short_name || route.route_id || "",
+                        headsign: trip.trip_headsign || ""
+                    });
+                }
+            }
 
-  const stopTimesByStop = new Map();
-  for(const st of stop_times){
-    if(!stopTimesByStop.has(st.stop_id)){
-      stopTimesByStop.set(st.stop_id,[]);
-    }
-    stopTimesByStop.get(st.stop_id).push(st);
-  }
+            candidates.sort((a, b) => a.dt - b.dt);
 
-  INDEXES = {stops,stopById,tripById,routeById,stopTimesByStop};
-  lastDownloadedAt = now;
-  return INDEXES;
-}
+            const unique = [];
+            const seen = new Set();
+            for (const c of candidates) {
+                const key = c.route + "|" + c.dt.getTime();
+                if (seen.has(key)) continue;
+                seen.add(key);
+                unique.push(c);
+                if (unique.length >= MAX_DISPLAY) break;
+            }
+            return unique;
+        }
 
-function computeUpcoming(){
-  if(!INDEXES) return [];
-  const stopIds = INDEXES.stops
-    .filter(s=>s.stop_name.toLowerCase().includes(DEFAULT_STOP.toLowerCase()))
-    .map(s=>s.stop_id);
+        function escapeHtml(s = '') { return String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;'); }
 
-  const now = new Date();
-  const candidates = [];
-
-  for(const sid of stopIds){
-    const rows = INDEXES.stopTimesByStop.get(sid)||[];
-    for(const r of rows){
-      const dt = parseGtfsTimeToDate(r.departure_time||r.arrival_time, now);
-      if(!dt) continue;
-      if(dt < now) continue;
-
-      const trip = INDEXES.tripById.get(r.trip_id)||{};
-      const route = INDEXES.routeById.get(trip.route_id)||{};
-      candidates.push({
-        dt,
-        route: route.route_short_name||route.route_id||"",
-        headsign: trip.trip_headsign||""
-      });
-    }
-  }
-
-  candidates.sort((a,b)=>a.dt-b.dt);
-
-  const unique=[];
-  const seen=new Set();
-  for(const c of candidates){
-    const key=c.route+"|"+c.dt.getTime();
-    if(seen.has(key)) continue;
-    seen.add(key);
-    unique.push(c);
-    if(unique.length>=MAX_DISPLAY) break;
-  }
-
-  return unique;
-}
-
-function render(){
-  const tbody=document.querySelector("#departuresTable tbody");
-  const upcoming=computeUpcoming();
-  tbody.innerHTML="";
-
-  for(const u of upcoming){
-    const tr=document.createElement("tr");
-    const mins=Math.max(0,Math.round((u.dt-new Date())/60000));
-    tr.innerHTML=`
-      <td class="line">${u.route}</td>
-      <td>${u.headsign}</td>
-      <td>${u.dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</td>
-      <td class="minutes">${mins}</td>
+        function render() {
+            const tbody = document.querySelector("#departuresTable tbody");
+            const upcoming = computeUpcoming();
+            tbody.innerHTML = "";
+            for (const u of upcoming) {
+                const tr = document.createElement("tr");
+                const mins = Math.max(0, Math.round((u.dt - new Date()) / 60000));
+                tr.innerHTML = `
+      <td><span class="line-box">${escapeHtml(u.route)}</span></td>
+      <td>${escapeHtml(u.headsign)}</td>
+      <td>${escapeHtml(u.dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))}</td>
+      <td class="minutes">${mins} min</td>
     `;
-    tbody.appendChild(tr);
-  }
-}
+                tbody.appendChild(tr);
+            }
+        }
 
-async function refresh(force=false){
-  await loadGTFS(force);
-  render();
-}
+        async function refresh(force = false) {
+            await loadGTFS(force);
+            render();
+        }
 
-refresh(true);
-setInterval(()=>refresh(false),REFRESH_INTERVAL_MS);
-setInterval(()=>refresh(true),REDOWNLOAD_INTERVAL_MS);
-
-</script>
+        refresh(true);
+        setInterval(() => refresh(false), REFRESH_INTERVAL_MS);
+        setInterval(() => refresh(true), REDOWNLOAD_INTERVAL_MS);
+    </script>
 </body>
+
 </html>
