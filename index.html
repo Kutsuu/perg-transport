@@ -35,12 +35,10 @@
             flex-direction: column;
             box-sizing: border-box;
             padding: 0;
-            /* eemaldame siit */
         }
 
         .content-padding {
             padding: 4px 20px 4px 20px;
-             /* paneme paddingu wrapperi sees olevatele elementidele, mitte wrapperile endale, et headeril ja tabelitel oleks ühtlane horisontaalne padding */
         }
 
         /* Header row: clock + stop name */
@@ -48,9 +46,7 @@
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            /* vasakule */
             gap: 32px;
-            /* natuke suurem vahe */
             margin-bottom: 0;
         }
 
@@ -63,7 +59,6 @@
         .stop-name {
             font-weight: 600;
             font-size: 8vh;
-            /* SUUREM */
             align-self: center;
         }
 
@@ -80,7 +75,6 @@
             display: flex;
             flex-direction: column;
             min-width: 0;
-            /* allow shrink */
         }
 
         .table-container {
@@ -139,7 +133,6 @@
             width: fit-content;
         }
 
-        /* Highlight box for the route number (ONLY visual change) */
         .line-box {
             display: inline-block;
             background: var(--accent);
@@ -164,12 +157,10 @@
                 opacity: 1;
             }
 
-            /* 1 sekund nähtav (≈66% of 1.5s) */
             67% {
                 opacity: 0;
             }
 
-            /* 0.5 sekundit kadunud */
             100% {
                 opacity: 0;
             }
@@ -319,7 +310,9 @@
                     const dt = parseGtfsTimeToDate(r.departure_time || r.arrival_time, now);
                     if (!dt) continue;
                     const diff = dt - now;
-                    if (diff < -30 * 1000) continue;
+                    // Kui väljumisaeg on juba saabunud või täpselt nüüd, ära lisa (kell 12:16:00 ja dt=12:16:00 -> eemaldada)
+                    if (diff <= 0) continue;
+                    // välista ka liiga kaugel olevad (nt permanentne tulevik)
                     if (diff > 7 * 24 * 3600 * 1000) continue;
                     const trip = INDEXES.tripById.get(r.trip_id) || {};
                     const route = INDEXES.routeById.get(trip.route_id) || {};
@@ -354,7 +347,10 @@
             tbody.innerHTML = '';
             const now = new Date();
             for (const u of entries) {
-                const mins = Math.max(0, Math.round((u.dt - now) / 60000));
+                // Näita 0 min siis kui buss väljub järgmise minuti jooksul.
+                // rawMinutes võib olla <1 näiteks 0.5 => Math.ceil(0.5)=1 -> 1-1 = 0
+                const rawMinutes = (u.dt - now) / 60000;
+                const mins = Math.max(0, Math.ceil(rawMinutes) - 1);
                 const tr = document.createElement('tr');
                 if (mins === 0) tr.classList.add('blink-zero');
                 tr.innerHTML = `
@@ -396,6 +392,5 @@
         setInterval(() => refresh(true), REDOWNLOAD_INTERVAL_MS);
     </script>
 </body>
-
 
 </html>
