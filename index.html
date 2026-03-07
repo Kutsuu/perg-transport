@@ -12,7 +12,7 @@
       --text: #081b1f;
       --muted: #6b8b80;
       --accent: #0e794b;
-      --header-footer-bg: #f6f8f7; /* sama taust headerile ja footerile */
+      --footer-bg: #f6f8f7;
       --footer-text: #446559;
     }
 
@@ -24,19 +24,32 @@
       color: var(--text);
       font-size: 5vh;
       min-height: 100vh;
-      height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
-    /* Layout: header, content, footer */
-    .header {
-      background: var(--header-footer-bg);
-      padding: 8px 20px;
+    /* reserve space for footer so content ei katke */
+    body {
+      padding-bottom: 56px; /* footer height + some margin */
+    }
+
+    .wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      padding: 0;
+    }
+
+    .content-padding {
+      padding: 4px 20px;
+    }
+
+    .header-row {
       display: flex;
       align-items: center;
       gap: 32px;
-      box-sizing: border-box;
+      padding-top: 8px;
     }
 
     .clock {
@@ -49,72 +62,41 @@
       font-size: 8vh;
     }
 
-    .content {
-      /* takes all space between header and footer */
-      flex: 1 1 auto;
-      display: flex;
-      flex-direction: column;
-      padding: 4px 20px;
-      box-sizing: border-box;
-      min-height: 0; /* important for children flex overflow */
-    }
-
     .tables-row {
       display: flex;
       gap: 12px;
-      flex: 1 1 0;
+      flex: 1;
       align-items: stretch;
-      min-height: 0; /* allow children to shrink and scroll */
       margin-top: 8px;
       margin-bottom: 8px;
     }
 
     .table-wrap {
-      flex: 1 1 0;
+      flex: 1;
       display: flex;
       flex-direction: column;
       min-width: 0;
-      min-height: 0;
     }
 
     .table-container {
-      flex: 1 1 0;
+      flex: 1;
       display: flex;
       flex-direction: column;
       padding: 8px;
-      min-height: 0;
     }
 
-    /* Make table stretch to available height; allow tbody to scroll */
     table {
       width: 100%;
       border-collapse: collapse;
-      table-layout: fixed;
+      table-layout: auto;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
       background: var(--panel);
-      display: flex;
-      flex-direction: column;
-      height: 100%;
     }
 
     thead {
       background: var(--accent);
-      flex: 0 0 auto;
-    }
-
-    tbody {
-      display: block;
-      overflow: auto;
-      flex: 1 1 auto;
-      /* keep rows compact */
-    }
-
-    thead tr, tbody tr {
-      display: table;
-      width: 100%;
-      table-layout: fixed;
     }
 
     th {
@@ -139,7 +121,7 @@
 
     .minutes {
       text-align: left;
-      width: 1%;
+      width: fit-content;
     }
 
     .line-box {
@@ -156,15 +138,20 @@
       white-space: nowrap;
     }
 
-    /* footer (not fixed) - same background as header, no border line */
+    /* footer */
     footer {
-      background: var(--header-footer-bg);
-      padding: 8px 20px;
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 56px;
+      background: var(--footer-bg);
       display: flex;
       align-items: center;
       gap: 12px;
+      padding: 8px 20px;
+      border-top: 1px solid #e6ece9;
       box-sizing: border-box;
-      /* no border-top */
     }
 
     footer img {
@@ -175,8 +162,9 @@
 
     .footer-text {
       color: var(--footer-text);
-      font-size: 2.4vh; /* larger in vh */
+      font-size: 12px;
       line-height: 1;
+      margin-left: 8px;
     }
 
     @media (max-width: 800px) {
@@ -192,8 +180,12 @@
         font-size: 3.5vh;
       }
 
+      footer {
+        padding: 8px 12px;
+      }
+
       .footer-text {
-        font-size: 2.2vh;
+        font-size: 11px;
       }
     }
   </style>
@@ -203,16 +195,16 @@
 </head>
 
 <body>
-  <header class="header">
-    <div id="clock" class="clock">--:--</div>
-    <div class="stop-name">Kolde puiestee</div>
-  </header>
+  <div class="wrapper">
+    <div class="header-row content-padding">
+      <div id="clock" class="clock">--:--</div>
+      <div class="stop-name">Kolde puiestee</div>
+    </div>
 
-  <main class="content">
-    <div class="tables-row">
+    <div class="tables-row content-padding">
       <div class="table-wrap" id="left-wrap">
         <div class="table-container">
-          <table id="departuresLeft" aria-label="Väljumised - vasak">
+          <table id="departuresLeft">
             <thead>
               <tr>
                 <th id="line-col">Liin</th>
@@ -228,7 +220,7 @@
 
       <div class="table-wrap" id="right-wrap">
         <div class="table-container">
-          <table id="departuresRight" aria-label="Väljumised - parem">
+          <table id="departuresRight">
             <thead>
               <tr>
                 <th id="line-col">Liin</th>
@@ -242,9 +234,9 @@
         </div>
       </div>
     </div>
-  </main>
+  </div>
 
-  <!-- footer: not fixed, same bg as header, no border line -->
+  <!-- Footer with logo.svg and warning text -->
   <footer>
     <img src="logo.svg" alt="Logo">
     <div class="footer-text">Hoiatus: andmed ei pruugi olla täpsed — ei arvesta busside hilinemistega.</div>
@@ -252,7 +244,7 @@
 
   <script>
     // === CONFIG ===
-    const DEFAULT_ZIP = 'https://perg-transport.vercel.app/api/tallinn';
+    const DEFAULT_ZIP = 'https://perg-transport.vercel.app/api/tallinn'; // kasutatav API link (GTFS zip)
     const LEFT_STOP_IDS = ["1194"];
     const RIGHT_STOP_IDS = ["1203", "1210"];
     const MAX_DISPLAY = 8;
@@ -300,7 +292,6 @@
         return INDEXES;
       }
 
-      // fetch expects a ZIP; the provided endpoint should return a GTFS zip.
       const res = await fetch(DEFAULT_ZIP);
       if (!res.ok) throw new Error('ZIP fetch failed: ' + res.status);
       const ab = await res.arrayBuffer();
@@ -369,7 +360,7 @@
       const end = cal.end_date;
       if (dateStr < start || dateStr > end) return false;
 
-      const weekday = dateObj.getDay();
+      const weekday = dateObj.getDay(); // 0=Sun..6=Sat
       const weekdayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
       const field = weekdayMap[weekday];
       return String(cal[field]) === '1';
@@ -432,7 +423,7 @@
       tbody.innerHTML = '';
       const now = new Date();
       for (const u of entries) {
-        // STANDARD minutes (no shifting)
+        // STANDARD minutes (no shifting) using Math.round
         const rawMinutes = (u.dt - now) / 60000;
         const mins = Math.max(0, Math.round(rawMinutes));
         const tr = document.createElement('tr');
