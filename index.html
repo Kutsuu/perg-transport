@@ -2,395 +2,468 @@
 <html lang="et">
 
 <head>
-    <meta charset="utf-8">
-    <title>Väljumised</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <style>
-        :root {
-            --bg: #ffffff;
-            --panel: #ffffff;
-            --text: #081b1f;
-            --muted: #ecf4f0;
-            --accent: #0e794b;
-        }
+  <meta charset="utf-8" />
+  <title>Väljumised</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root {
+      --bg: #ffffff;
+      --panel: #ffffff;
+      --text: #081b1f;
+      --muted: #ecf4f0;
+      --accent: #0e794b;
+    }
 
-        html,
-        body {
-            justify-content: center;
-            margin: 0;
-            background: var(--bg);
-            font-family: Mulish, Arial, sans-serif;
-            color: var(--text);
-            font-size: 5vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+    html,
+    body {
+      justify-content: center;
+      margin: 0;
+      background: var(--bg);
+      font-family: Mulish, Arial, sans-serif;
+      color: var(--text);
+      font-size: 5vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
 
-        /* Layout */
-        .wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-            padding: 0;
-        }
+    .wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      padding: 0;
+    }
 
-        .content-padding {
-            padding: 4px 20px 4px 20px;
-        }
+    .content-padding {
+      padding: 4px 20px 4px 20px;
+    }
 
-        /* Header row: clock + stop name */
-        .header-row {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 32px;
-            margin-bottom: 0;
-        }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 32px;
+      margin-bottom: 0;
+    }
 
-        /* Large centered clock */
-        .clock {
-            font-size: 10vh;
-            font-weight: 800;
-        }
+    .clock {
+      font-size: 10vh;
+      font-weight: 800;
+    }
 
-        .stop-name {
-            font-weight: 600;
-            font-size: 8vh;
-            align-self: center;
-        }
+    .stop-name {
+      font-weight: 600;
+      font-size: 8vh;
+      align-self: center;
+    }
 
-        /* Two tables side-by-side */
-        .tables-row {
-            display: flex;
-            gap: 12px;
-            flex: 1;
-            align-items: stretch;
-        }
+    .tables-row {
+      display: flex;
+      gap: 12px;
+      flex: 1;
+      align-items: stretch;
+    }
 
-        .table-wrap {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-        }
+    .table-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
 
-        .table-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 8px;
-        }
+    .table-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 8px;
+    }
 
-        table {
-            width: 100%;
-            height: fit-content;
-            border-collapse: collapse;
-            table-layout: auto;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.2);
-            background: var(--panel);
-        }
+    table {
+      width: 100%;
+      height: fit-content;
+      border-collapse: collapse;
+      table-layout: auto;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.2);
+      background: var(--panel);
+    }
 
-        thead {
-            background: #0e794b;
-        }
+    thead {
+      background: #0e794b;
+    }
 
-        th {
-            font-weight: 600;
-            text-align: left;
-            padding: 6px 12px 6px 12px;
-            color: var(--muted);
-        }
+    th {
+      font-weight: 600;
+      text-align: left;
+      padding: 6px 12px 6px 12px;
+      color: var(--muted);
+    }
 
-        td {
-            font-weight: 700;
-            padding: 12px;
-            border-top: 1px solid #ecf4f0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+    td {
+      font-weight: 700;
+      padding: 12px;
+      border-top: 1px solid #ecf4f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-        tbody tr {
-            height: 9%;
-        }
+    tbody tr {
+      height: 9%;
+    }
 
-        tbody tr:nth-child(even) {
-            background: #e3efea;
-        }
+    tbody tr:nth-child(even) {
+      background: #e3efea;
+    }
 
-        .line {
-            color: var(--accent);
-            font-weight: 800;
-        }
+    .line {
+      color: var(--accent);
+      font-weight: 800;
+    }
 
-        .minutes {
-            text-align: left;
-            width: fit-content;
-        }
+    .minutes {
+      text-align: left;
+      width: fit-content;
+    }
 
-        .line-box {
-            display: inline-block;
-            background: var(--accent);
-            color: #ffffff;
-            padding: 0px 24px;
-            border-radius: 12px;
-            font-weight: 800;
-        }
+    .line-box {
+      display: inline-block;
+      background: var(--accent);
+      color: #ffffff;
+      padding: 0px 24px;
+      border-radius: 12px;
+      font-weight: 800;
+    }
 
-        #line-col {
-            width: 1%;
-            white-space: nowrap;
-        }
+    #line-col {
+      width: 1%;
+      white-space: nowrap;
+    }
 
-        /* Blink animation for entire row */
-        @keyframes blinkZero {
-            0% {
-                opacity: 1;
-            }
+    @keyframes blinkZero {
+      0% {
+        opacity: 1;
+      }
 
-            66% {
-                opacity: 1;
-            }
+      66% {
+        opacity: 1;
+      }
 
-            67% {
-                opacity: 0;
-            }
+      67% {
+        opacity: 0;
+      }
 
-            100% {
-                opacity: 0;
-            }
-        }
+      100% {
+        opacity: 0;
+      }
+    }
 
-        .blink-zero {
-            animation: blinkZero 1.5s infinite;
-        }
+    .blink-zero {
+      animation: blinkZero 1.5s infinite;
+    }
 
-        /* Responsive fallback: stack vertically on very narrow screens */
-        @media (max-width:800px) {
-            .tables-row {
-                flex-direction: column;
-            }
+    @media (max-width:800px) {
+      .tables-row {
+        flex-direction: column;
+      }
 
-            .clock {
-                font-size: 6vh;
-            }
+      .clock {
+        font-size: 6vh;
+      }
 
-            .stop-name {
-                font-size: 3.5vh;
-            }
-        }
-    </style>
+      .stop-name {
+        font-size: 3.5vh;
+      }
+    }
+  </style>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 </head>
 
 <body>
-
-    <div class="wrapper">
-        <div class="header-row content-padding">
-            <div id="clock" class="clock">--:--</div>
-            <div class="stop-name">Kolde puiestee</div>
-        </div>
-
-        <div class="tables-row content-padding">
-            <!-- Left table: only stop_id = 1194 -->
-            <div class="table-wrap" id="left-wrap">
-                <div class="table-container">
-                    <table id="departuresLeft">
-                        <thead>
-                            <tr>
-                                <th id="line-col">Liin</th>
-                                <th></th>
-                                <th>Väljub</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Right table: stops 1203 + 1210 -->
-            <div class="table-wrap" id="right-wrap">
-                <div class="table-container">
-                    <table id="departuresRight">
-                        <thead>
-                            <tr>
-                                <th id="line-col">Liin</th>
-                                <th></th>
-                                <th>Väljub</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+  <div class="wrapper">
+    <div class="header-row content-padding">
+      <div id="clock" class="clock">--:--</div>
+      <div class="stop-name">Kolde puiestee</div>
     </div>
 
-    <script>
-        const DEFAULT_ZIP = 'https://perg-transport.vercel.app/api/tallinn';
-        const LEFT_STOP_IDS = ["1194"];
-        const RIGHT_STOP_IDS = ["1203", "1210"];
+    <div class="tables-row content-padding">
+      <div class="table-wrap" id="left-wrap">
+        <div class="table-container">
+          <table id="departuresLeft">
+            <thead>
+              <tr>
+                <th id="line-col">Liin</th>
+                <th></th>
+                <th>Väljub</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
 
-        const MAX_DISPLAY = 8;
-        const REDOWNLOAD_INTERVAL_MS = 5 * 60 * 1000;
+      <div class="table-wrap" id="right-wrap">
+        <div class="table-container">
+          <table id="departuresRight">
+            <thead>
+              <tr>
+                <th id="line-col">Liin</th>
+                <th></th>
+                <th>Väljub</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        let INDEXES = null;
-        let lastDownloadedAt = 0;
+  <script>
+    // === CONFIG ===
+    const DEFAULT_ZIP = 'https://perg-transport.vercel.app/api/tallinn';
+    const LEFT_STOP_IDS = ["1194"];
+    const RIGHT_STOP_IDS = ["1203", "1210"];
+    const MAX_DISPLAY = 8;
+    const REDOWNLOAD_INTERVAL_MS = 5 * 60 * 1000;
 
-        function updateClock() {
-            const n = new Date();
-            const hh = String(n.getHours()).padStart(2, '0');
-            const mm = String(n.getMinutes()).padStart(2, '0');
-            const ss = String(n.getSeconds()).padStart(2, '0');
-            document.getElementById("clock").textContent = hh + ":" + mm + ":" + ss;
+    // === STATE ===
+    let INDEXES = null;
+    let lastDownloadedAt = 0;
+
+    // === CLOCK ===
+    function updateClock() {
+      const n = new Date();
+      const hh = String(n.getHours()).padStart(2, '0');
+      const mm = String(n.getMinutes()).padStart(2, '0');
+      const ss = String(n.getSeconds()).padStart(2, '0');
+      document.getElementById("clock").textContent = hh + ":" + mm + ":" + ss;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // === CSV parse helper ===
+    function parseCSV(text) {
+      return Papa.parse(text.trim(), { header: true, skipEmptyLines: true }).data;
+    }
+
+    // === GTFS time to Date ===
+    // timeStr like "23:59:00" or "25:10:00" (next day)
+    function parseGtfsTimeToDate(timeStr, refDate) {
+      if (!timeStr) return null;
+      const parts = timeStr.split(":").map(Number);
+      if (parts.length < 2) return null;
+      let [h, m, s] = [parts[0] || 0, parts[1] || 0, parts[2] || 0];
+      const d = new Date(refDate);
+      d.setHours(0, 0, 0, 0);
+      const addDays = Math.floor(h / 24);
+      h = h % 24;
+      d.setDate(d.getDate() + addDays);
+      d.setHours(h, m, s, 0);
+      return d;
+    }
+
+    // === Load GTFS and index relevant files (stops, stop_times, trips, routes, calendar, calendar_dates) ===
+    async function loadGTFS(force = false) {
+      const now = Date.now();
+      if (!force && INDEXES && now - lastDownloadedAt < REDOWNLOAD_INTERVAL_MS) {
+        return INDEXES;
+      }
+
+      const res = await fetch(DEFAULT_ZIP);
+      if (!res.ok) throw new Error('ZIP fetch failed: ' + res.status);
+      const ab = await res.arrayBuffer();
+      const zip = await JSZip.loadAsync(ab);
+
+      const stops = zip.file("stops.txt") ? parseCSV(await zip.file("stops.txt").async("string")) : [];
+      const stop_times = zip.file("stop_times.txt") ? parseCSV(await zip.file("stop_times.txt").async("string")) : [];
+      const trips = zip.file("trips.txt") ? parseCSV(await zip.file("trips.txt").async("string")) : [];
+      const routes = zip.file("routes.txt") ? parseCSV(await zip.file("routes.txt").async("string")) : [];
+      const calendar = zip.file("calendar.txt") ? parseCSV(await zip.file("calendar.txt").async("string")) : [];
+      const calendar_dates = zip.file("calendar_dates.txt") ? parseCSV(await zip.file("calendar_dates.txt").async("string")) : [];
+
+      const stopById = new Map(stops.map(s => [s.stop_id, s]));
+      const tripById = new Map(trips.map(t => [t.trip_id, t]));
+      const routeById = new Map(routes.map(r => [r.route_id, r]));
+
+      const stopTimesByStop = new Map();
+      for (const st of stop_times) {
+        const sid = st.stop_id;
+        if (!stopTimesByStop.has(sid)) stopTimesByStop.set(sid, []);
+        stopTimesByStop.get(sid).push(st);
+      }
+
+      // index calendar by service_id
+      const calendarByService = new Map();
+      for (const c of calendar) {
+        if (c.service_id) calendarByService.set(c.service_id, c);
+      }
+
+      // group calendar_dates by service_id
+      const calendarDatesByService = new Map();
+      for (const cd of calendar_dates) {
+        if (!calendarDatesByService.has(cd.service_id)) calendarDatesByService.set(cd.service_id, []);
+        calendarDatesByService.get(cd.service_id).push(cd);
+      }
+
+      INDEXES = { stops, stopById, tripById, routeById, stopTimesByStop, calendarByService, calendarDatesByService };
+      lastDownloadedAt = now;
+      return INDEXES;
+    }
+
+    // === helpers for calendar logic ===
+    function YYYYMMDD(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${y}${m}${dd}`;
+    }
+
+    // checks service active for the calendar date that corresponds to 'dateObj' (departure date)
+    function isServiceActive(service_id, dateObj) {
+      if (!INDEXES) return true;
+      if (!service_id) return true;
+
+      const dateStr = YYYYMMDD(dateObj);
+
+      // 1) calendar_dates overrides
+      const cds = INDEXES.calendarDatesByService.get(service_id) || [];
+      for (const cd of cds) {
+        if (cd.date === dateStr) {
+          // exception_type: 1=added, 2=removed
+          return String(cd.exception_type) === '1';
         }
-        setInterval(updateClock, 1000);
-        updateClock();
+      }
 
-        function parseCSV(text) { return Papa.parse(text.trim(), { header: true, skipEmptyLines: true }).data; }
+      // 2) fallback to calendar.txt pattern
+      const cal = INDEXES.calendarByService.get(service_id);
+      if (!cal) {
+        // if no calendar entry, be permissive (you can change to false for strict mode)
+        return true;
+      }
 
-        function parseGtfsTimeToDate(timeStr, ref) {
-            if (!timeStr) return null;
-            let [h, m, s] = timeStr.split(":").map(Number);
-            const d = new Date(ref);
-            d.setHours(0, 0, 0, 0);
-            const addDays = Math.floor(h / 24);
-            h = h % 24;
-            d.setDate(d.getDate() + addDays);
-            d.setHours(h, m, s, 0);
-            return d;
+      // check date within start/end
+      const start = cal.start_date; // YYYYMMDD
+      const end = cal.end_date;
+      if (dateStr < start || dateStr > end) return false;
+
+      // weekday check
+      const weekday = dateObj.getDay(); // 0=Sunday .. 6=Saturday
+      const weekdayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const field = weekdayMap[weekday];
+      return String(cal[field]) === '1';
+    }
+
+    // escape HTML for safety
+    function escapeHtml(s = '') { return String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;'); }
+
+    // === compute upcoming departures for given stops ===
+    function computeUpcomingForStops(stopIds, maxCount = MAX_DISPLAY) {
+      if (!INDEXES) return [];
+      const now = new Date();
+      const candidates = [];
+
+      for (const sid of stopIds) {
+        const rows = INDEXES.stopTimesByStop.get(sid) || [];
+        for (const r of rows) {
+          // parse dt using 'now' as reference (handles >24h)
+          const dt = parseGtfsTimeToDate(r.departure_time || r.arrival_time, now);
+          if (!dt) continue;
+          const diff = dt - now;
+
+          // discard departures that are at or before current moment
+          if (diff <= 0) continue;
+
+          // ignore absurdly far future items (safety)
+          if (diff > 7 * 24 * 3600 * 1000) continue;
+
+          // check service active for the departure date (dt)
+          const trip = INDEXES.tripById.get(r.trip_id) || {};
+          const serviceId = trip.service_id;
+          if (serviceId && !isServiceActive(serviceId, dt)) continue;
+
+          const route = INDEXES.routeById.get(trip.route_id) || {};
+          candidates.push({
+            dt,
+            route: route.route_short_name || route.route_id || '',
+            headsign: trip.trip_headsign || trip.trip_short_name || '',
+            stop_id: sid
+          });
         }
+      }
 
-        async function loadGTFS(force = false) {
-            const now = Date.now();
-            if (!force && INDEXES && now - lastDownloadedAt < REDOWNLOAD_INTERVAL_MS) {
-                return INDEXES;
-            }
-            const res = await fetch(DEFAULT_ZIP);
-            if (!res.ok) throw new Error('ZIP fetch failed: ' + res.status);
-            const ab = await res.arrayBuffer();
-            const zip = await JSZip.loadAsync(ab);
-            const stops = parseCSV(await zip.file("stops.txt").async("string"));
-            const stop_times = parseCSV(await zip.file("stop_times.txt").async("string"));
-            const trips = parseCSV(await zip.file("trips.txt").async("string"));
-            const routes = parseCSV(await zip.file("routes.txt").async("string"));
+      candidates.sort((a, b) => a.dt - b.dt);
 
-            const stopById = new Map(stops.map(s => [s.stop_id, s]));
-            const tripById = new Map(trips.map(t => [t.trip_id, t]));
-            const routeById = new Map(routes.map(r => [r.route_id, r]));
-            const stopTimesByStop = new Map();
-            for (const st of stop_times) {
-                const sid = st.stop_id;
-                if (!stopTimesByStop.has(sid)) stopTimesByStop.set(sid, []);
-                stopTimesByStop.get(sid).push(st);
-            }
+      const unique = [];
+      const seen = new Set();
+      for (const c of candidates) {
+        const minuteKey = Math.floor(c.dt.getTime() / 60000);
+        const key = `${minuteKey}|${c.route}|${c.headsign}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        unique.push(c);
+        if (unique.length >= maxCount) break;
+      }
+      return unique;
+    }
 
-            INDEXES = { stops, stopById, tripById, routeById, stopTimesByStop };
-            lastDownloadedAt = now;
-            return INDEXES;
-        }
+    // === render table rows ===
+    function renderTable(tableId, entries) {
+      const tbody = document.querySelector(`#${tableId} tbody`);
+      tbody.innerHTML = '';
+      const now = new Date();
+      for (const u of entries) {
+        // show 0 min when departure is within next minute (ceil(raw)-1)
+        const rawMinutes = (u.dt - now) / 60000;
+        const mins = Math.max(0, Math.ceil(rawMinutes) - 1);
+        const tr = document.createElement('tr');
+        if (mins === 0) tr.classList.add('blink-zero');
+        tr.innerHTML = `
+          <td><span class="line-box">${escapeHtml(u.route)}</span></td>
+          <td>${escapeHtml(u.headsign)}</td>
+          <td>${escapeHtml(u.dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))}</td>
+          <td class="minutes">${mins} min</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
 
-        function computeUpcomingForStops(stopIds, maxCount = MAX_DISPLAY) {
-            if (!INDEXES) return [];
-            const now = new Date();
-            const candidates = [];
+    // === refresh logic ===
+    async function refresh(force = false) {
+      try {
+        await loadGTFS(force);
+        const leftEntries = computeUpcomingForStops(LEFT_STOP_IDS, MAX_DISPLAY);
+        renderTable('departuresLeft', leftEntries);
+        const rightEntries = computeUpcomingForStops(RIGHT_STOP_IDS, MAX_DISPLAY);
+        renderTable('departuresRight', rightEntries);
+      } catch (err) {
+        console.error('refresh error', err);
+      }
+    }
 
-            for (const sid of stopIds) {
-                const rows = INDEXES.stopTimesByStop.get(sid) || [];
-                for (const r of rows) {
-                    const dt = parseGtfsTimeToDate(r.departure_time || r.arrival_time, now);
-                    if (!dt) continue;
-                    const diff = dt - now;
-                    // Kui väljumisaeg on juba saabunud või täpselt nüüd, ära lisa (kell 12:16:00 ja dt=12:16:00 -> eemaldada)
-                    if (diff <= 0) continue;
-                    // välista ka liiga kaugel olevad (nt permanentne tulevik)
-                    if (diff > 7 * 24 * 3600 * 1000) continue;
-                    const trip = INDEXES.tripById.get(r.trip_id) || {};
-                    const route = INDEXES.routeById.get(trip.route_id) || {};
-                    candidates.push({
-                        dt,
-                        route: route.route_short_name || route.route_id || '',
-                        headsign: trip.trip_headsign || trip.trip_short_name || '',
-                        stop_id: sid
-                    });
-                }
-            }
-
-            candidates.sort((a, b) => a.dt - b.dt);
-
-            const unique = [];
-            const seen = new Set();
-            for (const c of candidates) {
-                const minuteKey = Math.floor(c.dt.getTime() / 60000);
-                const key = `${minuteKey}|${c.route}|${c.headsign}`;
-                if (seen.has(key)) continue;
-                seen.add(key);
-                unique.push(c);
-                if (unique.length >= maxCount) break;
-            }
-            return unique;
-        }
-
-        function escapeHtml(s = '') { return String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;'); }
-
-        function renderTable(tableId, entries) {
-            const tbody = document.querySelector(`#${tableId} tbody`);
-            tbody.innerHTML = '';
-            const now = new Date();
-            for (const u of entries) {
-                // Näita 0 min siis kui buss väljub järgmise minuti jooksul.
-                // rawMinutes võib olla <1 näiteks 0.5 => Math.ceil(0.5)=1 -> 1-1 = 0
-                const rawMinutes = (u.dt - now) / 60000;
-                const mins = Math.max(0, Math.ceil(rawMinutes) - 1);
-                const tr = document.createElement('tr');
-                if (mins === 0) tr.classList.add('blink-zero');
-                tr.innerHTML = `
-      <td><span class="line-box">${escapeHtml(u.route)}</span></td>
-      <td>${escapeHtml(u.headsign)}</td>
-      <td>${escapeHtml(u.dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))}</td>
-      <td class="minutes">${mins} min</td>
-    `;
-                tbody.appendChild(tr);
-            }
-        }
-
-        async function refresh(force = false) {
-            try {
-                await loadGTFS(force);
-                const leftEntries = computeUpcomingForStops(LEFT_STOP_IDS, MAX_DISPLAY);
-                renderTable('departuresLeft', leftEntries);
-                const rightEntries = computeUpcomingForStops(RIGHT_STOP_IDS, MAX_DISPLAY);
-                renderTable('departuresRight', rightEntries);
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        // schedule refresh exactly at each new minute start
-        function scheduleNextMinuteRefresh() {
-            const now = new Date();
-            const msUntilNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
-            setTimeout(() => {
-                refresh(false);
-                scheduleNextMinuteRefresh();
-            }, msUntilNextMinute);
-        }
-
-        // Start
-        refresh(true);
+    // schedule refresh at each new minute start for accurate minute counts
+    function scheduleNextMinuteRefresh() {
+      const now = new Date();
+      const msUntilNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+      setTimeout(() => {
+        refresh(false);
         scheduleNextMinuteRefresh();
-        // keep periodic re-download of ZIP (5 min) for freshness
-        setInterval(() => refresh(true), REDOWNLOAD_INTERVAL_MS);
-    </script>
+      }, msUntilNextMinute);
+    }
+
+    // initial start
+    refresh(true);
+    scheduleNextMinuteRefresh();
+    // periodic re-download for updated feed (every 5 minutes)
+    setInterval(() => refresh(true), REDOWNLOAD_INTERVAL_MS);
+  </script>
 </body>
 
 </html>
