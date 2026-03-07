@@ -1,26 +1,30 @@
 // api/tallinn.js
-// Vercel serverless function: proxy for the remote GTFS zip.
-// Streams upstream response to caller and adds CORS + cache headers.
+// Vercel serverless function — proxy for remote GTFS zip.
+// Streams upstream response and sets CORS headers.
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   const REMOTE = 'https://eu-gtfs.remix.com/tallinn.zip';
   try {
-    const upstream = await fetch(REMOTE, { method: 'GET' });
+    const upstream = await fetch(REMOTE);
     if (!upstream.ok) {
       return res.status(upstream.status).send('Upstream fetch failed');
     }
 
-    // Forward useful headers and expose CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Content-Type', upstream.headers.get('content-type') || 'application/zip');
-    // Edge/cache hint: let Vercel/edge cache for short time
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
 
-    // Read full body (safe for typical GTFS sizes) and send as binary
-    const buf = Buffer.from(await upstream.arrayBuffer());
-    res.status(200).send(buf);
+    // Stream the upstream body to the response to avoid buffering large files
+    const reader = upstream.body.getReader();
+    res.writeHead(200);
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      res.write(Buffer.from(value));
+    }
+    res.end();
   } catch (err) {
     console.error('proxy error', err);
     res.status(500).send('Proxy error');
   }
-};
+}
