@@ -10,22 +10,27 @@
       --bg: #ffffff;
       --panel: #ffffff;
       --text: #081b1f;
-      --muted: #ecf4f0;
+      --muted: #6b8b80;
       --accent: #0e794b;
+      --footer-bg: #f6f8f7;
+      --footer-text: #446559;
     }
 
     html,
     body {
-      justify-content: center;
       margin: 0;
       background: var(--bg);
       font-family: Mulish, Arial, sans-serif;
       color: var(--text);
       font-size: 5vh;
-      overflow: hidden;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
+    }
+
+    /* reserve space for footer so content ei katke */
+    body {
+      padding-bottom: 56px; /* footer height + some margin */
     }
 
     .wrapper {
@@ -37,15 +42,14 @@
     }
 
     .content-padding {
-      padding: 4px 20px 4px 20px;
+      padding: 4px 20px;
     }
 
     .header-row {
       display: flex;
       align-items: center;
-      justify-content: flex-start;
       gap: 32px;
-      margin-bottom: 0;
+      padding-top: 8px;
     }
 
     .clock {
@@ -56,7 +60,6 @@
     .stop-name {
       font-weight: 600;
       font-size: 8vh;
-      align-self: center;
     }
 
     .tables-row {
@@ -64,6 +67,8 @@
       gap: 12px;
       flex: 1;
       align-items: stretch;
+      margin-top: 8px;
+      margin-bottom: 8px;
     }
 
     .table-wrap {
@@ -82,24 +87,23 @@
 
     table {
       width: 100%;
-      height: fit-content;
       border-collapse: collapse;
       table-layout: auto;
-      border-radius: 16px;
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
       background: var(--panel);
     }
 
     thead {
-      background: #0e794b;
+      background: var(--accent);
     }
 
     th {
       font-weight: 600;
       text-align: left;
-      padding: 6px 12px 6px 12px;
-      color: var(--muted);
+      padding: 8px 12px;
+      color: white;
     }
 
     td {
@@ -111,17 +115,8 @@
       text-overflow: ellipsis;
     }
 
-    tbody tr {
-      height: 9%;
-    }
-
     tbody tr:nth-child(even) {
-      background: #e3efea;
-    }
-
-    .line {
-      color: var(--accent);
-      font-weight: 800;
+      background: #f1fbf6;
     }
 
     .minutes {
@@ -133,8 +128,8 @@
       display: inline-block;
       background: var(--accent);
       color: #ffffff;
-      padding: 0px 24px;
-      border-radius: 12px;
+      padding: 0px 20px;
+      border-radius: 10px;
       font-weight: 800;
     }
 
@@ -143,29 +138,36 @@
       white-space: nowrap;
     }
 
-    @keyframes blinkZero {
-      0% {
-        opacity: 1;
-      }
-
-      66% {
-        opacity: 1;
-      }
-
-      67% {
-        opacity: 0;
-      }
-
-      100% {
-        opacity: 0;
-      }
+    /* footer */
+    footer {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 56px;
+      background: var(--footer-bg);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 20px;
+      border-top: 1px solid #e6ece9;
+      box-sizing: border-box;
     }
 
-    .blink-zero {
-      animation: blinkZero 1.5s infinite;
+    footer img {
+      height: 40px;
+      width: auto;
+      display: block;
     }
 
-    @media (max-width:800px) {
+    .footer-text {
+      color: var(--footer-text);
+      font-size: 12px;
+      line-height: 1;
+      margin-left: 8px;
+    }
+
+    @media (max-width: 800px) {
       .tables-row {
         flex-direction: column;
       }
@@ -176,6 +178,14 @@
 
       .stop-name {
         font-size: 3.5vh;
+      }
+
+      footer {
+        padding: 8px 12px;
+      }
+
+      .footer-text {
+        font-size: 11px;
       }
     }
   </style>
@@ -198,7 +208,7 @@
             <thead>
               <tr>
                 <th id="line-col">Liin</th>
-                <th></th>
+                <th>Siht</th>
                 <th>Väljub</th>
                 <th></th>
               </tr>
@@ -214,7 +224,7 @@
             <thead>
               <tr>
                 <th id="line-col">Liin</th>
-                <th></th>
+                <th>Siht</th>
                 <th>Väljub</th>
                 <th></th>
               </tr>
@@ -226,9 +236,15 @@
     </div>
   </div>
 
+  <!-- Footer with logo.svg and warning text -->
+  <footer>
+    <img src="logo.svg" alt="Logo">
+    <div class="footer-text">Hoiatus: andmed ei pruugi olla täpsed — ei arvesta busside hilinemistega.</div>
+  </footer>
+
   <script>
     // === CONFIG ===
-    const DEFAULT_ZIP = 'https://perg-transport.vercel.app/api/tallinn';
+    const DEFAULT_ZIP = 'https://perg-transport.vercel.app/api/tallinn'; // kasutatav API link (GTFS zip)
     const LEFT_STOP_IDS = ["1194"];
     const RIGHT_STOP_IDS = ["1203", "1210"];
     const MAX_DISPLAY = 8;
@@ -269,7 +285,7 @@
       return d;
     }
 
-    // === Load GTFS and index relevant files (stops, stop_times, trips, routes, calendar, calendar_dates) ===
+    // === Load GTFS and index relevant files ===
     async function loadGTFS(force = false) {
       const now = Date.now();
       if (!force && INDEXES && now - lastDownloadedAt < REDOWNLOAD_INTERVAL_MS) {
@@ -299,13 +315,12 @@
         stopTimesByStop.get(sid).push(st);
       }
 
-      // index calendar by service_id
+      // calendar indexes
       const calendarByService = new Map();
       for (const c of calendar) {
         if (c.service_id) calendarByService.set(c.service_id, c);
       }
 
-      // group calendar_dates by service_id
       const calendarDatesByService = new Map();
       for (const cd of calendar_dates) {
         if (!calendarDatesByService.has(cd.service_id)) calendarDatesByService.set(cd.service_id, []);
@@ -317,7 +332,7 @@
       return INDEXES;
     }
 
-    // === helpers for calendar logic ===
+    // === calendar helpers ===
     function YYYYMMDD(d) {
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -325,45 +340,36 @@
       return `${y}${m}${dd}`;
     }
 
-    // checks service active for the calendar date that corresponds to 'dateObj' (departure date)
     function isServiceActive(service_id, dateObj) {
       if (!INDEXES) return true;
       if (!service_id) return true;
-
       const dateStr = YYYYMMDD(dateObj);
 
-      // 1) calendar_dates overrides
+      // calendar_dates overrides
       const cds = INDEXES.calendarDatesByService.get(service_id) || [];
       for (const cd of cds) {
         if (cd.date === dateStr) {
-          // exception_type: 1=added, 2=removed
           return String(cd.exception_type) === '1';
         }
       }
 
-      // 2) fallback to calendar.txt pattern
       const cal = INDEXES.calendarByService.get(service_id);
-      if (!cal) {
-        // permissive if no calendar entry
-        return true;
-      }
+      if (!cal) return true; // permissive fallback
 
-      // check date within start/end
-      const start = cal.start_date; // YYYYMMDD
+      const start = cal.start_date;
       const end = cal.end_date;
       if (dateStr < start || dateStr > end) return false;
 
-      // weekday check
-      const weekday = dateObj.getDay(); // 0=Sunday .. 6=Saturday
+      const weekday = dateObj.getDay(); // 0=Sun..6=Sat
       const weekdayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
       const field = weekdayMap[weekday];
       return String(cal[field]) === '1';
     }
 
-    // escape HTML for safety
+    // escape HTML
     function escapeHtml(s = '') { return String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;'); }
 
-    // === compute upcoming departures for given stops ===
+    // === compute upcoming departures ===
     function computeUpcomingForStops(stopIds, maxCount = MAX_DISPLAY) {
       if (!INDEXES) return [];
       const now = new Date();
@@ -372,18 +378,16 @@
       for (const sid of stopIds) {
         const rows = INDEXES.stopTimesByStop.get(sid) || [];
         for (const r of rows) {
-          // parse dt using 'now' as reference (handles >24h)
           const dt = parseGtfsTimeToDate(r.departure_time || r.arrival_time, now);
           if (!dt) continue;
           const diff = dt - now;
 
-          // discard departures that are at or before current moment
+          // discard departures that are at or before now
           if (diff <= 0) continue;
 
-          // ignore absurdly far future items (safety)
+          // ignore absurdly far future
           if (diff > 7 * 24 * 3600 * 1000) continue;
 
-          // check service active for the departure date (dt)
           const trip = INDEXES.tripById.get(r.trip_id) || {};
           const serviceId = trip.service_id;
           if (serviceId && !isServiceActive(serviceId, dt)) continue;
@@ -413,17 +417,16 @@
       return unique;
     }
 
-    // === render table rows ===
+    // === render table ===
     function renderTable(tableId, entries) {
       const tbody = document.querySelector(`#${tableId} tbody`);
       tbody.innerHTML = '';
       const now = new Date();
       for (const u of entries) {
-        // ****** WITHOUT SHIFTING: use simple rounding ******
+        // STANDARD minutes (no shifting) using Math.round
         const rawMinutes = (u.dt - now) / 60000;
         const mins = Math.max(0, Math.round(rawMinutes));
         const tr = document.createElement('tr');
-        if (mins === 0) tr.classList.add('blink-zero');
         tr.innerHTML = `
           <td><span class="line-box">${escapeHtml(u.route)}</span></td>
           <td>${escapeHtml(u.headsign)}</td>
@@ -434,7 +437,7 @@
       }
     }
 
-    // === refresh logic ===
+    // === refresh ===
     async function refresh(force = false) {
       try {
         await loadGTFS(force);
@@ -447,7 +450,7 @@
       }
     }
 
-    // schedule refresh at each new minute start for accurate minute counts
+    // schedule refresh at minute boundary
     function scheduleNextMinuteRefresh() {
       const now = new Date();
       const msUntilNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
@@ -457,10 +460,9 @@
       }, msUntilNextMinute);
     }
 
-    // initial start
+    // start
     refresh(true);
     scheduleNextMinuteRefresh();
-    // periodic re-download for updated feed (every 5 minutes)
     setInterval(() => refresh(true), REDOWNLOAD_INTERVAL_MS);
   </script>
 </body>
