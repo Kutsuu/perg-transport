@@ -255,7 +255,6 @@
     }
 
     // === GTFS time to Date ===
-    // timeStr like "23:59:00" or "25:10:00" (next day)
     function parseGtfsTimeToDate(timeStr, refDate) {
       if (!timeStr) return null;
       const parts = timeStr.split(":").map(Number);
@@ -345,7 +344,7 @@
       // 2) fallback to calendar.txt pattern
       const cal = INDEXES.calendarByService.get(service_id);
       if (!cal) {
-        // if no calendar entry, be permissive (you can change to false for strict mode)
+        // permissive if no calendar entry
         return true;
       }
 
@@ -420,9 +419,9 @@
       tbody.innerHTML = '';
       const now = new Date();
       for (const u of entries) {
-        // show 0 min when departure is within next minute (ceil(raw)-1)
+        // ****** WITHOUT SHIFTING: use simple rounding ******
         const rawMinutes = (u.dt - now) / 60000;
-        const mins = Math.max(0, Math.ceil(rawMinutes) - 1);
+        const mins = Math.max(0, Math.round(rawMinutes));
         const tr = document.createElement('tr');
         if (mins === 0) tr.classList.add('blink-zero');
         tr.innerHTML = `
